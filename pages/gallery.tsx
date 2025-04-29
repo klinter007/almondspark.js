@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
+import Header from '../components/Header';
+import SettingsModal from '../components/SettingsModal';
 
 interface GalleryItem {
   id: string;
@@ -14,6 +15,20 @@ export default function Gallery() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+
+  // Load API key from localStorage on initial render
+  useEffect(() => {
+    try {
+      const savedApiKey = localStorage.getItem('geminiApiKey');
+      if (savedApiKey) {
+        setApiKey(savedApiKey);
+      }
+    } catch (err) {
+      console.error('Error accessing localStorage:', err);
+    }
+  }, []);
 
   // Function to load 5 random gallery items
   const loadGalleryItems = async (isRefresh = false) => {
@@ -50,6 +65,10 @@ export default function Gallery() {
   // Function to handle "Show me more" button click
   const handleShowMore = () => {
     loadGalleryItems(true);
+  };
+
+  const handleApiKeySave = (newApiKey: string) => {
+    setApiKey(newApiKey);
   };
 
   const downloadImage = (filename: string, base64Data: string) => {
@@ -120,113 +139,110 @@ export default function Gallery() {
         <link rel="icon" href="/images/logo.png" type="image/png" />
       </Head>
 
-      <nav className="main-nav">
-        <ul>
-          <li><Link href="/">Home</Link></li>
-          <li><Link href="/gallery" className="active">Gallery</Link></li>
-          <li><Link href="/personal-note">Personal Note</Link></li>
-        </ul>
-      </nav>
-
-      <div className="container">
-        <header className="hero">
-          <div className="title-container">
-            <h1 className="main-title">Gallery</h1>
-            <p className="tagline">Visual Strips Created by Our Community</p>
-          </div>
-        </header>
-        
-        <main className="content">
-          <section className="gallery-section">
-            <p className="gallery-intro">Here are past generations from our users. Hope you can find helpful strips for you here.</p>
-            
-            <div className="gallery-controls">
-              <button 
-                className="gallery-button" 
-                onClick={handleShowMore} 
-                disabled={refreshing}
-              >
-                {refreshing ? (
-                  <>
-                    <div className="spinner-small"></div> Loading...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-dice"></i> Show me more
-                  </>
-                )}
-              </button>
-            </div>
-            
-            <div id="gallery-container" className="gallery-grid">
-              {loading ? (
-                <div className="gallery-loading">
-                  <div className="spinner"></div>
-                  <p>Loading gallery items...</p>
-                </div>
-              ) : error ? (
-                <div className="gallery-error">
-                  <p>Error loading gallery items. Please try again later.</p>
-                  <p className="error-details">{error}</p>
-                </div>
-              ) : galleryItems.length === 0 ? (
-                <div className="gallery-empty">
-                  <p>No gallery items available yet. Generate some images first!</p>
-                </div>
+      <Header 
+        onApiKeySave={handleApiKeySave}
+        apiKey={apiKey}
+      />
+      
+      <main className="content">
+        <section className="gallery-section">
+          <h1 className="main-title">Gallery</h1>
+          <p className="gallery-intro">Visual Strips Created by Our Community</p>
+          <p className="gallery-intro">Here are past generations from our users. Hope you can find helpful strips for you here.</p>
+          
+          <div className="gallery-controls">
+            <button 
+              className="gallery-button" 
+              onClick={handleShowMore} 
+              disabled={refreshing}
+            >
+              {refreshing ? (
+                <>
+                  <div className="spinner-small"></div> Loading...
+                </>
               ) : (
-                galleryItems.map((item) => (
-                  <div key={item.id} className="gallery-item">
-                    <div className="gallery-image-container">
-                      <img
-                        src={`data:image/png;base64,${item.image_base64}`}
-                        alt={item.sentence}
-                        className="gallery-image"
-                      />
-                      <div className="gallery-actions">
-                        <button 
-                          className="gallery-action-btn download-btn" 
-                          title="Download" 
-                          onClick={() => downloadImage(item.filename, item.image_base64)}
-                        >
-                          <i className="fas fa-download"></i>
-                        </button>
-                        <button 
-                          className="gallery-action-btn print-btn" 
-                          title="Print" 
-                          onClick={() => printImage(item.image_base64, item.sentence)}
-                        >
-                          <i className="fas fa-print"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div className="gallery-caption">
-                      <p className="prompt-text">{item.sentence}</p>
+                <>
+                  <i className="fas fa-dice"></i> Show me more
+                </>
+              )}
+            </button>
+          </div>
+          
+          <div id="gallery-container" className="gallery-grid">
+            {loading ? (
+              <div className="gallery-loading">
+                <div className="spinner"></div>
+                <p>Loading gallery items...</p>
+              </div>
+            ) : error ? (
+              <div className="gallery-error">
+                <p>Error loading gallery items. Please try again later.</p>
+                <p className="error-details">{error}</p>
+              </div>
+            ) : galleryItems.length === 0 ? (
+              <div className="gallery-empty">
+                <p>No gallery items available yet. Generate some images first!</p>
+              </div>
+            ) : (
+              galleryItems.map((item) => (
+                <div key={item.id} className="gallery-item">
+                  <div className="gallery-image-container">
+                    <img
+                      src={`data:image/png;base64,${item.image_base64}`}
+                      alt={item.sentence}
+                      className="gallery-image"
+                    />
+                    <div className="gallery-actions">
+                      <button 
+                        className="gallery-action-btn download-btn" 
+                        title="Download" 
+                        onClick={() => downloadImage(item.filename, item.image_base64)}
+                      >
+                        <i className="fas fa-download"></i>
+                      </button>
+                      <button 
+                        className="gallery-action-btn print-btn" 
+                        title="Print" 
+                        onClick={() => printImage(item.image_base64, item.sentence)}
+                      >
+                        <i className="fas fa-print"></i>
+                      </button>
                     </div>
                   </div>
-                ))
+                  <div className="gallery-caption">
+                    <p className="prompt-text">{item.sentence}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          
+          <div className="gallery-controls bottom-controls">
+            <button 
+              className="gallery-button" 
+              onClick={handleShowMore}
+              disabled={refreshing}
+            >
+              {refreshing ? (
+                <>
+                  <div className="spinner-small"></div> Loading...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-dice"></i> Show me more
+                </>
               )}
-            </div>
-            
-            <div className="gallery-controls bottom-controls">
-              <button 
-                className="gallery-button" 
-                onClick={handleShowMore}
-                disabled={refreshing}
-              >
-                {refreshing ? (
-                  <>
-                    <div className="spinner-small"></div> Loading...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-dice"></i> Show me more
-                  </>
-                )}
-              </button>
-            </div>
-          </section>
-        </main>
-      </div>
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <SettingsModal 
+        isOpen={isApiKeyModalOpen}
+        onClose={() => setIsApiKeyModalOpen(false)}
+        onSave={handleApiKeySave}
+        initialApiKey={apiKey}
+      />
 
       <footer>
         <p>&copy; 2025 Almond Spark. All rights reserved.</p>
