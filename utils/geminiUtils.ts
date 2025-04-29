@@ -199,8 +199,11 @@ export const generateStrip = async (
   // Store in Vercel Blob if in serverless environment, otherwise store locally
   if (isVercelServerless) {
     try {
-      // Upload to Vercel Blob
-      const blob = await put(`comics/${filename}`, imageBuffer, {
+      // Generate a unique filename for Vercel Blob by adding a UUID suffix
+      const uniqueBlobFilename = `comics/${nextNum.toString().padStart(6, "0")}-${id.substring(0, 8)}.png`;
+      
+      // Upload to Vercel Blob with the unique filename
+      const blob = await put(uniqueBlobFilename, imageBuffer, {
         access: 'public',
         contentType: 'image/png'
       });
