@@ -6,6 +6,7 @@ type GenerateResponse = {
   filename?: string;
   image_url?: string;
   error?: string;
+  errorType?: 'api_key' | 'service_unavailable' | 'general';
   canGenerate?: boolean;
 }
 
@@ -28,6 +29,7 @@ export default async function handler(
     if (!apiKey || typeof apiKey !== 'string') {
       return res.status(400).json({ 
         error: 'Please provide your Gemini API key. Get one from https://ai.google.dev/',
+        errorType: 'api_key',
         canGenerate: false 
       });
     }
@@ -46,8 +48,33 @@ export default async function handler(
     });
   } catch (error) {
     console.error('Error generating comic strip:', error);
+    
+    // Check for specific error types
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Handle 503 Service Unavailable errors
+    if (errorMessage.includes('503') || errorMessage.includes('unavailable')) {
+      return res.status(503).json({
+        error: 'The Gemini model is currently overloaded. Please wait a few minutes and try again.',
+        errorType: 'service_unavailable'
+      });
+    }
+    
+    // Handle API key errors
+    if (errorMessage.toLowerCase().includes('api key') || 
+        errorMessage.toLowerCase().includes('unauthorized') || 
+        errorMessage.toLowerCase().includes('permission') ||
+        errorMessage.toLowerCase().includes('credential')) {
+      return res.status(401).json({
+        error: 'Your API key appears to be invalid or has insufficient permissions. Please check your key in Settings.',
+        errorType: 'api_key'
+      });
+    }
+    
+    // Generic error
     return res.status(500).json({ 
-      error: `Error generating comic strip: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      error: 'Sorry, something went wrong. Please try again in a few minutes or contact us if the problem persists.',
+      errorType: 'general'
     });
   }
 }

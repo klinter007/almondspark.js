@@ -535,17 +535,74 @@ h2 {
 }
 
 .error-message {
-  color: var(--error);
   padding: var(--space-md);
-  background-color: rgba(217, 83, 79, 0.1);
-  border-left: 4px solid var(--error);
   margin: var(--space-md) 0;
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
 }
 
-.error-details {
-  font-size: 14px;
-  color: var(--almond);
-  margin-top: var(--space-md);
+.error-api_key {
+  background-color: rgba(243, 133, 130, 0.1);
+  border-left-color: var(--coral);
+  color: #721c24;
+}
+
+.error-service_unavailable {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-left-color: #ffc107;
+  color: #856404;
+}
+
+.error-general {
+  background-color: rgba(220, 53, 69, 0.1);
+  border-left-color: #dc3545;
+  color: #721c24;
+}
+
+.error-hint {
+  font-size: 0.9em;
+  margin-top: var(--space-sm);
+  opacity: 0.8;
+}
+
+.error-action-btn {
+  margin-top: var(--space-sm);
+  background-color: var(--teal);
+  color: white;
+  border: none;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.error-action-btn:hover {
+  background-color: var(--teal-dark);
+}
+
+/* API Key Prompt */
+.api-key-prompt {
+  background-color: var(--teal-lighter);
+  border: 1px dashed var(--teal);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin: var(--space-md) 0;
+  text-align: center;
+}
+
+.settings-prompt-btn {
+  margin-top: var(--space-sm);
+  background-color: var(--teal);
+  color: white;
+  border: none;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.settings-prompt-btn:hover {
+  background-color: var(--teal-dark);
 }
 
 /* Footer Styles */

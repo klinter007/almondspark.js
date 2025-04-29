@@ -10,6 +10,7 @@ export default function Home() {
   const [generatedImage, setGeneratedImage] = useState('');
   const [generatedFilename, setGeneratedFilename] = useState('');
   const [error, setError] = useState('');
+  const [errorType, setErrorType] = useState<'api_key' | 'service_unavailable' | 'general' | ''>('');
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   
   // Load API key from localStorage on initial render, but don't show modal
@@ -36,6 +37,7 @@ export default function Home() {
     
     setLoading(true);
     setError('');
+    setErrorType('');
     setGeneratedImage('');
     setGeneratedFilename('');
 
@@ -51,25 +53,24 @@ export default function Home() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
       const data = await response.json();
+      
       if (data.error) {
-        // If the error mentions API key, likely it's invalid - show the settings modal
-        if (data.error.toLowerCase().includes('api key')) {
-          setError(`Invalid API Key: ${data.error}`);
+        setError(data.error);
+        setErrorType(data.errorType || 'general');
+        
+        // If it's an API key error, show the settings modal
+        if (data.errorType === 'api_key') {
           setIsApiKeyModalOpen(true);
-          return;
         }
-        throw new Error(data.error);
+        return;
       }
 
       setGeneratedImage(data.image_base64);
       setGeneratedFilename(data.filename || 'almondspark-image.png');
     } catch (err) {
-      setError(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setError('Sorry, something went wrong. Please try again in a few minutes.');
+      setErrorType('general');
     } finally {
       setLoading(false);
     }
@@ -186,6 +187,18 @@ export default function Home() {
             
             <p className="generation-disclaimer">ALL the generations here will be shown randomly in the gallery section - make sure you don't use personal information in your strips.</p>
             
+            {!apiKey && !loading && !error && (
+              <div className="api-key-prompt">
+                <p>Please use the Settings to input your Gemini API key so we can generate strips for you.</p>
+                <button 
+                  onClick={() => setIsApiKeyModalOpen(true)} 
+                  className="settings-prompt-btn"
+                >
+                  Open Settings
+                </button>
+              </div>
+            )}
+            
             {loading && (
               <div id="loading-indicator" className="htmx-indicator" style={{ display: 'flex' }}>
                 <div className="spinner"></div>
@@ -194,9 +207,22 @@ export default function Home() {
             )}
             
             {error && (
-              <div className="error-message">
-                <p>Sorry, there was an error generating your image.</p>
-                <p>Error: {error}</p>
+              <div className={`error-message error-${errorType}`}>
+                <p>{error}</p>
+                {errorType === 'api_key' && (
+                  <button 
+                    onClick={() => setIsApiKeyModalOpen(true)} 
+                    className="error-action-btn"
+                  >
+                    Open Settings
+                  </button>
+                )}
+                {errorType === 'service_unavailable' && (
+                  <p className="error-hint">The Gemini model experiences high traffic at times. Please try again later.</p>
+                )}
+                {errorType === 'general' && (
+                  <p className="error-hint">If this problem persists, please contact us for assistance.</p>
+                )}
               </div>
             )}
             
