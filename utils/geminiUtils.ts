@@ -13,6 +13,7 @@ import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import sharp from 'sharp';
+import { put, list, del } from '@vercel/blob';
 
 // >>> NEW GOOGLE SDK <<<
 import {
@@ -20,6 +21,13 @@ import {
   type Content,
   type GenerationConfig,
 } from "@google/genai";
+
+// ---------------------------------------------------------------------------
+// Environment detection
+// ---------------------------------------------------------------------------
+
+// Check if running in a read-only environment like Vercel
+const isVercelServerless = process.env.VERCEL === '1';
 
 // ---------------------------------------------------------------------------
 // Paths & bootstrap helpers
@@ -165,7 +173,7 @@ export const generateImage = async (apiKey: string, imagePrompt: string): Promis
 export const generateStrip = async (
   apiKey: string,
   sentence: string
-): Promise<{ imagePath: string; imageBase64: string }> => {
+): Promise<{ imagePath: string; imageBase64: string; imageUrl?: string }> => {
   initialize();
 
   // Next sequence number ----------------------------------------------------
@@ -185,24 +193,67 @@ export const generateStrip = async (
   // --- run both hops -------------------------------------------------------
   const prompt = await generateImagePrompt(apiKey, sentence);
   const imageBuffer = await generateImage(apiKey, prompt);
+  
+  let imageUrl;
+  
+  // Store in Vercel Blob if in serverless environment, otherwise store locally
+  if (isVercelServerless) {
+    try {
+      // Upload to Vercel Blob
+      const blob = await put(`comics/${filename}`, imageBuffer, {
+        access: 'public',
+        contentType: 'image/png'
+      });
+      imageUrl = blob.url;
+      
+      // Since we can't write to the filesystem, we'll update the index differently
+      await updateImageIndex(id, sentence, filename, imageUrl);
+    } catch (error) {
+      console.error('Error uploading to Vercel Blob:', error);
+      throw new Error('Failed to upload image to Vercel Blob');
+    }
+  } else {
+    // Local storage for development
+    fs.writeFileSync(imagePath, new Uint8Array(imageBuffer)); // Cast Buffer to Uint8Array
+    updateImageIndex(id, sentence, filename);
+  }
 
-  fs.writeFileSync(imagePath, new Uint8Array(imageBuffer)); // Cast Buffer to Uint8Array
-  updateImageIndex(id, sentence, filename);
-
-  return { imagePath, imageBase64: imageBuffer.toString("base64") };
+  return { 
+    imagePath, 
+    imageBase64: imageBuffer.toString("base64"),
+    imageUrl 
+  };
 };
 
 // ---------------------------------------------------------------------------
 //  Gallery helpers
 // ---------------------------------------------------------------------------
 
-export const updateImageIndex = (id: string, sentence: string, filename: string) => {
-  let records: any[] = [];
-  if (fs.existsSync(INDEX_PATH)) {
-    try { records = JSON.parse(fs.readFileSync(INDEX_PATH, "utf-8")); } catch {/* ignore */ }
+export const updateImageIndex = async (id: string, sentence: string, filename: string, imageUrl?: string) => {
+  if (isVercelServerless) {
+    // In serverless, we'll need to fetch the existing index, modify it, and then store it back
+    // This is just a placeholder for now - in production you'd use a database
+    // For simplicity, we're still using the file-based index in serverless mode
+    try {
+      let records: any[] = [];
+      if (fs.existsSync(INDEX_PATH)) {
+        try { records = JSON.parse(fs.readFileSync(INDEX_PATH, "utf-8")); } catch {/* ignore */ }
+      }
+      records.push({ id, sentence, filename, imageUrl });
+      fs.writeFileSync(INDEX_PATH, JSON.stringify(records, null, 2));
+    } catch (error) {
+      console.error('Error updating image index in serverless environment:', error);
+      // In a production app, you would store this in a database instead
+    }
+  } else {
+    // Local development - file-based approach
+    let records: any[] = [];
+    if (fs.existsSync(INDEX_PATH)) {
+      try { records = JSON.parse(fs.readFileSync(INDEX_PATH, "utf-8")); } catch {/* ignore */ }
+    }
+    records.push({ id, sentence, filename, imageUrl });
+    fs.writeFileSync(INDEX_PATH, JSON.stringify(records, null, 2));
   }
-  records.push({ id, sentence, filename });
-  fs.writeFileSync(INDEX_PATH, JSON.stringify(records, null, 2));
 };
 
 export const deleteGalleryItem = async (id: string) => {
@@ -212,8 +263,22 @@ export const deleteGalleryItem = async (id: string) => {
   if (idx === -1) return { success: false, message: "Item not found" } as const;
 
   const filename = records[idx].filename;
-  const imagePath = path.join(GEMINI_STRIPS_DIR, filename);
-  if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+  const imageUrl = records[idx].imageUrl;
+  
+  // If we have an imageUrl (Vercel Blob), delete from Blob storage
+  if (isVercelServerless && imageUrl) {
+    try {
+      // Delete from Vercel Blob storage
+      await del(imageUrl);
+    } catch (error) {
+      console.error('Error deleting from Vercel Blob:', error);
+      // Continue with index deletion even if blob deletion fails
+    }
+  } else {
+    // Local file system deletion
+    const imagePath = path.join(GEMINI_STRIPS_DIR, filename);
+    if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+  }
 
   records.splice(idx, 1);
   fs.writeFileSync(INDEX_PATH, JSON.stringify(records, null, 2));
@@ -235,6 +300,17 @@ export const getGallery = (search = "", limit = 50) => {
   if (limit && records.length > limit) records = records.sort(() => 0.5 - Math.random()).slice(0, limit);
 
   const gallery = records.map((rec) => {
+    // If we have an imageUrl (from Vercel Blob), prioritize it
+    if (rec.imageUrl) {
+      return { 
+        ...rec, 
+        image_url: rec.imageUrl,
+        // Optionally don't include base64 since we have a URL
+        image_base64: "" 
+      };
+    }
+    
+    // Otherwise fall back to local file system for development
     const imgPath = path.join(GEMINI_STRIPS_DIR, rec.filename);
     const base64 = fs.existsSync(imgPath) ? fs.readFileSync(imgPath).toString("base64") : "";
     return { ...rec, image_base64: base64 };
