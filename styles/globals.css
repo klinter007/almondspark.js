@@ -969,3 +969,50 @@ footer {
     border-bottom: 1px solid var(--teal-lighter);
   }
 }
+
+/* Retry countdown styling */
+.retry-countdown {
+  margin-top: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  background-color: rgba(255, 193, 7, 0.05);
+  border-radius: var(--radius-md);
+}
+
+.countdown-timer {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.countdown-number {
+  position: absolute;
+  font-size: 14px;
+  font-weight: bold;
+  color: #856404;
+}
+
+.countdown-svg {
+  transform: rotate(-90deg);
+}
+
+.countdown-circle {
+  fill: none;
+  stroke: #ffc107;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.retry-message {
+  margin: 0;
+  font-size: 0.9em;
+  color: #856404;
+}

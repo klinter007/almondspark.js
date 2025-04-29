@@ -1,4 +1,4 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Header from '../components/Header';
 import SettingsModal from '../components/SettingsModal';
@@ -13,6 +13,13 @@ export default function Home() {
   const [errorType, setErrorType] = useState<'api_key' | 'service_unavailable' | 'general' | ''>('');
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   
+  // Retry state
+  const [retryCount, setRetryCount] = useState(0);
+  const [retryCountdown, setRetryCountdown] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retriesLeft, setRetriesLeft] = useState(0);
+  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Load API key from localStorage on initial render, but don't show modal
   useEffect(() => {
     try {
@@ -26,6 +33,44 @@ export default function Home() {
     }
   }, []);
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Handle countdown timer for retries
+  useEffect(() => {
+    // If we're retrying and have a countdown value, start the timer
+    if (isRetrying && retryCountdown > 0) {
+      countdownTimerRef.current = setInterval(() => {
+        setRetryCountdown((prevCount) => {
+          // When countdown reaches 0, clear the interval and trigger retry
+          if (prevCount <= 1) {
+            if (countdownTimerRef.current) {
+              clearInterval(countdownTimerRef.current);
+            }
+            // Trigger the retry in the next event loop cycle
+            setTimeout(() => {
+              retryGeneration();
+            }, 0);
+            return 0;
+          }
+          return prevCount - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current);
+      }
+    };
+  }, [isRetrying, retryCountdown]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
@@ -34,6 +79,10 @@ export default function Home() {
       setIsApiKeyModalOpen(true);
       return;
     }
+    
+    // Reset retry state when starting a new generation
+    setRetryCount(0);
+    setIsRetrying(false);
     
     setLoading(true);
     setError('');
@@ -49,7 +98,8 @@ export default function Home() {
         },
         body: JSON.stringify({ 
           sentence,
-          apiKey
+          apiKey,
+          retryCount: 0 // Initial request, retry count is 0
         }),
       });
 
@@ -59,8 +109,15 @@ export default function Home() {
         setError(data.error);
         setErrorType(data.errorType || 'general');
         
-        // If it's an API key error, show the settings modal
-        if (data.errorType === 'api_key') {
+        // Handle service unavailable errors with retries
+        if (data.errorType === 'service_unavailable' && data.retryAfter && data.retriesLeft >= 0) {
+          setRetryCount(1); // First retry will be count 1
+          setRetryCountdown(data.retryAfter);
+          setIsRetrying(true);
+          setRetriesLeft(data.retriesLeft);
+        } 
+        // Handle API key errors
+        else if (data.errorType === 'api_key') {
           setIsApiKeyModalOpen(true);
         }
         return;
@@ -71,6 +128,56 @@ export default function Home() {
     } catch (err) {
       setError('Sorry, something went wrong. Please try again in a few minutes.');
       setErrorType('general');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to handle automatic retry
+  const retryGeneration = async () => {
+    setLoading(true);
+    setIsRetrying(false);
+    
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          sentence,
+          apiKey,
+          retryCount: retryCount
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        setError(data.error);
+        setErrorType(data.errorType || 'general');
+        
+        // Handle retry for service unavailable
+        if (data.errorType === 'service_unavailable' && data.retryAfter && data.retriesLeft >= 0) {
+          setRetryCount(prevCount => prevCount + 1);
+          setRetryCountdown(data.retryAfter);
+          setIsRetrying(true);
+          setRetriesLeft(data.retriesLeft);
+        } else if (data.errorType === 'api_key') {
+          setIsApiKeyModalOpen(true);
+        }
+        return;
+      }
+
+      // Success! Reset retry state and show the image
+      setRetryCount(0);
+      setIsRetrying(false);
+      setGeneratedImage(data.image_base64);
+      setGeneratedFilename(data.filename || 'almondspark-image.png');
+    } catch (err) {
+      setError('Sorry, something went wrong. Please try again in a few minutes.');
+      setErrorType('general');
+      setIsRetrying(false);
     } finally {
       setLoading(false);
     }
@@ -217,8 +324,31 @@ export default function Home() {
                     Open Settings
                   </button>
                 )}
-                {errorType === 'service_unavailable' && (
+                {errorType === 'service_unavailable' && !isRetrying && retriesLeft === 0 && (
                   <p className="error-hint">The Gemini model experiences high traffic at times. Please try again later.</p>
+                )}
+                {errorType === 'service_unavailable' && isRetrying && (
+                  <div className="retry-countdown">
+                    <div className="countdown-timer">
+                      <span className="countdown-number">{retryCountdown}</span>
+                      <svg className="countdown-svg" width="40" height="40">
+                        <circle 
+                          className="countdown-circle" 
+                          cx="20" 
+                          cy="20" 
+                          r="16"
+                          style={{ 
+                            strokeDashoffset: `${100 - (retryCountdown / (retryCount === 1 ? 10 : retryCount === 2 ? 15 : 20) * 100)}` 
+                          }}
+                        />
+                      </svg>
+                    </div>
+                    <p className="retry-message">
+                      Automatic retry in progress... {retriesLeft > 0 ? 
+                        `${retriesLeft} more ${retriesLeft === 1 ? 'retry' : 'retries'} will be attempted if needed.` : 
+                        'This is the last retry attempt.'}
+                    </p>
+                  </div>
                 )}
                 {errorType === 'general' && (
                   <p className="error-hint">If this problem persists, please contact us for assistance.</p>

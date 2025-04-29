@@ -8,6 +8,8 @@ type GenerateResponse = {
   error?: string;
   errorType?: 'api_key' | 'service_unavailable' | 'general';
   canGenerate?: boolean;
+  retryAfter?: number; // New field for retry delay
+  retriesLeft?: number; // New field for remaining retries
 }
 
 export default async function handler(
@@ -20,7 +22,7 @@ export default async function handler(
   }
 
   try {
-    const { sentence, apiKey } = req.body;
+    const { sentence, apiKey, retryCount = 0 } = req.body;
 
     if (!sentence || typeof sentence !== 'string') {
       return res.status(400).json({ error: 'Invalid request. "sentence" is required.' });
@@ -52,12 +54,31 @@ export default async function handler(
     // Check for specific error types
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
-    // Handle 503 Service Unavailable errors
-    if (errorMessage.includes('503') || errorMessage.includes('unavailable')) {
-      return res.status(503).json({
-        error: 'The Gemini model is currently overloaded. Please wait a few minutes and try again.',
-        errorType: 'service_unavailable'
-      });
+    // Handle 503 Service Unavailable errors with retry logic
+    if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('unavailable')) {
+      const retryCount = parseInt(req.body.retryCount || '0');
+      
+      // Define retry delays (in seconds)
+      const retryDelays = [10, 15, 20];
+      
+      // Check if we still have retries left
+      if (retryCount < retryDelays.length) {
+        const currentDelay = retryDelays[retryCount];
+        const retriesLeft = retryDelays.length - retryCount - 1;
+        
+        return res.status(503).json({
+          error: `The Gemini model is currently overloaded. We'll try again in ${currentDelay} seconds.`,
+          errorType: 'service_unavailable',
+          retryAfter: currentDelay,
+          retriesLeft: retriesLeft
+        });
+      } else {
+        // No more retries left
+        return res.status(503).json({
+          error: 'Sorry, the Gemini model is currently too busy. Please try again later.',
+          errorType: 'service_unavailable'
+        });
+      }
     }
     
     // Handle API key errors
