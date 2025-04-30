@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import SettingsModal from './SettingsModal';
+import GeminiApiKeyModal from './GeminiApiKeyModal';
 
 interface HeaderProps {
   onApiKeySave: (apiKey: string) => void;
@@ -18,13 +18,14 @@ const Header = ({ onApiKeySave, apiKey }: HeaderProps) => {
           <li><Link href="/" className="active">Home</Link></li>
           <li><Link href="/gallery">Gallery</Link></li>
           <li><Link href="/personal-note">Personal Note</Link></li>
-          <li className="settings-li">
+          <li><Link href="/disclaimer">Disclaimer</Link></li>
+          <li className="api-key-li">
             <button 
               onClick={() => setIsSettingsModalOpen(true)} 
-              className="settings-button"
-              title="API Key Settings"
+              className="api-key-button"
+              title="Set Gemini API Key"
             >
-              ⚙️ Settings
+              🔑 GEMINI API KEY
             </button>
           </li>
         </ul>
@@ -50,7 +51,7 @@ const Header = ({ onApiKeySave, apiKey }: HeaderProps) => {
         </header>
       </div>
 
-      <SettingsModal 
+      <GeminiApiKeyModal 
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onSave={onApiKeySave}
@@ -58,11 +59,11 @@ const Header = ({ onApiKeySave, apiKey }: HeaderProps) => {
       />
 
       <style jsx>{`
-        .settings-li {
+        .api-key-li {
           margin-left: auto;
         }
         
-        .settings-button {
+        .api-key-button {
           background: none;
           border: none;
           color: inherit;
@@ -74,7 +75,7 @@ const Header = ({ onApiKeySave, apiKey }: HeaderProps) => {
           gap: 5px;
         }
 
-        .settings-button:hover {
+        .api-key-button:hover {
           opacity: 0.8;
         }
       `}</style>
