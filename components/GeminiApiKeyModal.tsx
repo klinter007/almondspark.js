@@ -48,8 +48,8 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
           </a>
         </p>
         <p className="settings-info">
-          Your API key is stored only in your browser and never sent to our servers.
-          It will be used for generating images with Gemini AI.
+          Your API key is stored in your browser and used to generate images with the 
+          gemini-2.0-flash-exp model. The API key is only used for this service.
         </p>
         
         <div className="settings-form">

@@ -79,7 +79,7 @@ h2 {
     list-style: none;
     padding: 0;
     margin: 0;
-    justify-content: center;
+    justify-content: flex-start;  /* Change from center to flex-start */
     border-bottom: 2px solid var(--almond);
     padding-bottom: 6px;
 }
@@ -569,4 +569,18 @@ footer {
     padding-top: var(--space-xl);
     color: var(--teal);
     font-size: 0.9em;
+}
+
+/* =========== CONSISTENT CONTENT LAYOUT =========== */
+.personal-note, .disclaimer-page {
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure first item in these pages has consistent top margin */
+.personal-note .note-section:first-child,
+.disclaimer-page .note-section:first-child {
+    margin-top: var(--space-lg);
 }

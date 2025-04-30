@@ -125,6 +125,7 @@ export default function Gallery() {
           <li><Link href="/">Home</Link></li>
           <li><Link href="/gallery" className="active">Gallery</Link></li>
           <li><Link href="/personal-note">Personal Note</Link></li>
+          <li><Link href="/disclaimer">Disclaimer</Link></li>
         </ul>
       </nav>
 
