@@ -276,6 +276,82 @@ button:hover, .gallery-button:hover {
     margin-right: auto;
 }
 
+/* API Key Banner */
+.api-key-banner {
+    max-width: 800px;
+    margin: 0 auto var(--space-xl) auto;
+    background-color: rgba(243, 133, 130, 0.08);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--coral);
+    border-left: 6px solid var(--coral);
+    overflow: hidden;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.06);
+}
+
+.api-key-banner-content {
+    padding: var(--space-md) var(--space-lg);
+    text-align: left;
+}
+
+.api-key-banner h3 {
+    margin-top: 0;
+    margin-bottom: var(--space-sm);
+    color: var(--coral);
+    font-size: 1.2em;
+    border-bottom: none;
+    padding-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.api-key-banner p {
+    margin-bottom: var(--space-sm);
+    font-weight: 500;
+}
+
+.api-key-banner ul {
+    padding-left: var(--space-xl);
+    margin: var(--space-md) 0;
+}
+
+.api-key-banner li {
+    margin-bottom: 6px;
+    color: var(--charcoal);
+}
+
+.settings-icon {
+    font-size: 1.1em;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.api-key-banner-btn {
+    background-color: var(--coral);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    font-size: 15px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-top: var(--space-sm);
+    transition: background-color 0.2s;
+}
+
+.api-key-banner-btn:hover {
+    background-color: var(--almond);
+}
+
+/* Hide the banner when API key is already set */
+body:has([data-api-key="true"]) .api-key-banner {
+    display: none;
+}
+
+.result-container {
+    margin-top: var(--space-xl);
+    text-align: center;
+}
+
 .result-container {
     margin-top: var(--space-xl);
     text-align: center;
@@ -443,6 +519,33 @@ button:hover, .gallery-button:hover {
     color: #666;
     font-size: 0.9em;
     margin-top: var(--space-sm);
+}
+
+/* API Key Notice Section */
+.api-key-notice {
+    background-color: var(--teal-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    margin: var(--space-md) 0;
+    border-left: 4px solid var(--teal);
+}
+
+.api-key-notice p strong {
+    color: var(--teal-dark);
+}
+
+.api-key-notice ul {
+    padding-left: var(--space-xl);
+    margin: var(--space-sm) 0;
+}
+
+.api-key-notice li {
+    margin-bottom: 6px;
+}
+
+.api-key-notice p:last-child {
+    margin-bottom: 0;
+    font-weight: 500;
 }
 
 .signature {

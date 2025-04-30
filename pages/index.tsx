@@ -264,10 +264,29 @@ export default function Home() {
         apiKey={apiKey}
       />
 
-      <main className="content">
+      <main className="content" data-api-key={!!apiKey}>
         <section className="generator-section">
           <h2>Generate Your Visual Strip</h2>
           <p className="generator-intro">Enter the idea or sentence you wish to convey and press the button</p>
+
+          <div className="api-key-banner">
+            <div className="api-key-banner-content">
+              <h3>📝 Before you start: Gemini API Key required</h3>
+              <p>To generate images, you need a free Gemini API key:</p>
+              <ul>
+                <li>We use the Gemini Flash 2.0 EXP model — completely free to use</li>
+                <li>Your API key is saved locally on your device only, never on our servers</li>
+                <li>No personal information is collected</li>
+                <li>Click the settings icon <span className="settings-icon">⚙️</span> in the top right corner to enter your key</li>
+              </ul>
+              <button 
+                onClick={() => setIsApiKeyModalOpen(true)} 
+                className="api-key-banner-btn"
+              >
+                Enter API Key
+              </button>
+            </div>
+          </div>
 
           <div className="generator-form">
             <form onSubmit={handleSubmit}>

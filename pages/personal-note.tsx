@@ -69,6 +69,17 @@ export default function PersonalNote() {
                   <li>Returns a clear PNG you can print, show on a tablet, or stick on the fridge.</li>
                 </ul>
                 <p className="note-limits">Limits: free model quota; heavy use may stall—refresh later.</p>
+                <div className="api-key-notice">
+                  <p><strong>Important:</strong> To generate images with AlmondSpark, you need a Gemini API key.</p>
+                  <ul>
+                    <li>We use the free Gemini Flash 2.0 EXP model, so there's no cost to you.</li>
+                    <li>Your API key is saved only locally on your computer—never on our servers.</li>
+                    <li>We don't collect any personal information about users.</li>
+                    <li>Generated images are shared in the gallery for everyone's benefit.</li>
+                    <li>To get started, click the settings icon in the top right corner to enter your API key.</li>
+                  </ul>
+                  <p>The use of AlmondSpark is completely free.</p>
+                </div>
               </section>
               
               <section className="note-section">
@@ -112,15 +123,25 @@ export default function PersonalNote() {
                   {section.content && <p>{section.content}</p>}
                   
                   {index === 3 && (
-                    <ul className="feature-list">
-                      {hebrewTranslation.features.map((feature, i) => (
-                        <li key={i}>{feature}</li>
-                      ))}
-                    </ul>
-                  )}
-                  
-                  {index === 3 && (
-                    <p className="note-limits">{hebrewTranslation.limits}</p>
+                    <>
+                      <ul className="feature-list">
+                        {hebrewTranslation.features.map((feature, i) => (
+                          <li key={i}>{feature}</li>
+                        ))}
+                      </ul>
+                      <p className="note-limits">{hebrewTranslation.limits}</p>
+                      <div className="api-key-notice">
+                        <p><strong>חשוב לדעת:</strong> כדי ליצור תמונות באמצעות AlmondSpark, אתם צריכים מפתח API של Gemini.</p>
+                        <ul>
+                          <li>אנו משתמשים במודל Gemini Flash 2.0 EXP החינמי, כך שאין עלות עבורכם.</li>
+                          <li>מפתח ה-API שלכם נשמר מקומית רק על המחשב שלכם – לעולם לא על השרתים שלנו.</li>
+                          <li>איננו אוספים מידע אישי כלשהו על המשתמשים.</li>
+                          <li>התמונות שנוצרות משותפות בגלריה לטובת כולם.</li>
+                          <li>כדי להתחיל, לחצו על סמל ההגדרות בפינה הימנית העליונה כדי להזין את מפתח ה-API שלכם.</li>
+                        </ul>
+                        <p>השימוש ב-AlmondSpark הוא לחלוטין חינמי.</p>
+                      </div>
+                    </>
                   )}
                   
                   {index === 6 && (
