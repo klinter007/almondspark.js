@@ -71,13 +71,13 @@ export default function PersonalNote() {
                 <p className="note-limits">Limits: free model quota; heavy use may stall—refresh later.</p>
                 <div className="api-key-notice">
                   <p><strong>Important:</strong> To generate images with AlmondSpark, you need a Gemini API key.</p>
-                  <ul>
-                    <li>We use the free Gemini Flash 2.0 EXP model, so there's no cost to you.</li>
-                    <li>Your API key is saved only locally on your computer—never on our servers.</li>
-                    <li>We don't collect any personal information about users.</li>
-                    <li>Generated images are shared in the gallery for everyone's benefit.</li>
-                    <li>To get started, click the settings icon in the top right corner to enter your API key.</li>
-                  </ul>
+                  <p className="api-key-notice-info">
+                    We use the free gemini-2.0-flash-exp model, so there's no cost to you.<br/>
+                    Your API key is saved only locally on your computer—never on our servers.<br/>
+                    We don't collect any personal information about users.<br/>
+                    Generated images are shared in the gallery for everyone's benefit.<br/>
+                    To get started, click the settings icon in the top right corner to enter your API key.
+                  </p>
                   <p>The use of AlmondSpark is completely free.</p>
                 </div>
               </section>
@@ -132,13 +132,13 @@ export default function PersonalNote() {
                       <p className="note-limits">{hebrewTranslation.limits}</p>
                       <div className="api-key-notice">
                         <p><strong>חשוב לדעת:</strong> כדי ליצור תמונות באמצעות AlmondSpark, אתם צריכים מפתח API של Gemini.</p>
-                        <ul>
-                          <li>אנו משתמשים במודל Gemini Flash 2.0 EXP החינמי, כך שאין עלות עבורכם.</li>
-                          <li>מפתח ה-API שלכם נשמר מקומית רק על המחשב שלכם – לעולם לא על השרתים שלנו.</li>
-                          <li>איננו אוספים מידע אישי כלשהו על המשתמשים.</li>
-                          <li>התמונות שנוצרות משותפות בגלריה לטובת כולם.</li>
-                          <li>כדי להתחיל, לחצו על סמל ההגדרות בפינה הימנית העליונה כדי להזין את מפתח ה-API שלכם.</li>
-                        </ul>
+                        <p className="api-key-notice-info">
+                          אנו משתמשים במודל gemini-2.0-flash-exp החינמי, כך שאין עלות עבורכם.<br/>
+                          מפתח ה-API שלכם נשמר מקומית רק על המחשב שלכם – לעולם לא על השרתים שלנו.<br/>
+                          איננו אוספים מידע אישי כלשהו על המשתמשים.<br/>
+                          התמונות שנוצרות משותפות בגלריה לטובת כולם.<br/>
+                          כדי להתחיל, לחצו על סמל ההגדרות בפינה הימנית העליונה כדי להזין את מפתח ה-API שלכם.
+                        </p>
                         <p>השימוש ב-AlmondSpark הוא לחלוטין חינמי.</p>
                       </div>
                     </>

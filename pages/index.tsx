@@ -273,18 +273,13 @@ export default function Home() {
             <div className="api-key-banner-content">
               <h3>📝 Before you start: Gemini API Key required</h3>
               <p>To generate images, you need a free Gemini API key:</p>
-              <ul>
-                <li>We use the Gemini Flash 2.0 EXP model — completely free to use</li>
-                <li>Your API key is saved locally on your device only, never on our servers</li>
-                <li>No personal information is collected</li>
-                <li>Click the settings icon <span className="settings-icon">⚙️</span> in the top right corner to enter your key</li>
-              </ul>
-              <button 
-                onClick={() => setIsApiKeyModalOpen(true)} 
-                className="api-key-banner-btn"
-              >
-                Enter API Key
-              </button>
+              <p className="api-key-banner-info">
+                We use the free gemini-2.0-flash-exp model, so there's no cost to you.<br/>
+                Your API key is saved only locally on your computer—never on our servers.<br/>
+                We don't collect any personal information about users.<br/>
+                Generated images are shared in the gallery for everyone's benefit.<br/>
+                Click the settings icon <span className="settings-icon">⚙️</span> in the top right corner to enter your key.
+              </p>
             </div>
           </div>
 

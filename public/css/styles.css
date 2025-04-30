@@ -310,36 +310,15 @@ button:hover, .gallery-button:hover {
     font-weight: 500;
 }
 
-.api-key-banner ul {
-    padding-left: var(--space-xl);
-    margin: var(--space-md) 0;
-}
-
-.api-key-banner li {
-    margin-bottom: 6px;
-    color: var(--charcoal);
+.api-key-banner-info {
+    line-height: 1.6;
+    font-weight: normal !important;
 }
 
 .settings-icon {
     font-size: 1.1em;
     display: inline-block;
     vertical-align: middle;
-}
-
-.api-key-banner-btn {
-    background-color: var(--coral);
-    border: none;
-    color: white;
-    padding: 8px 16px;
-    font-size: 15px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    margin-top: var(--space-sm);
-    transition: background-color 0.2s;
-}
-
-.api-key-banner-btn:hover {
-    background-color: var(--almond);
 }
 
 /* Hide the banner when API key is already set */
