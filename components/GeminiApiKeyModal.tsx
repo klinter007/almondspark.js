@@ -43,13 +43,20 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
         <h2>GEMINI API KEY</h2>
         <p>
           Please enter your Gemini API key from{' '}
-          <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer">
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
             Google AI Studio
           </a>
         </p>
         <p className="settings-info">
           Your API key is stored in your browser and used to generate images with the 
-          gemini-2.0-flash-exp model. The API key is only used for this service.
+          gemini-2.0-flash-exp model. To create a new API key:{' '}
+          <ol className="key-instructions">
+            <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio API Keys page</a></li>
+            <li>Sign in with your Google account</li>
+            <li>Click "Create API key"</li>
+            <li>Copy the generated key and paste it here</li>
+          </ol>
+          The API key is only used for this service and stored locally in your browser.
         </p>
         
         <div className="settings-form">
@@ -107,6 +114,20 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
           font-size: 14px;
           color: #666;
           margin-bottom: 20px;
+        }
+        
+        .key-instructions {
+          margin-top: 8px;
+          padding-left: 20px;
+        }
+        
+        .key-instructions li {
+          margin-bottom: 5px;
+        }
+        
+        .key-instructions a {
+          color: #4a8fe7;
+          text-decoration: underline;
         }
         
         .settings-form {
