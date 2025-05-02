@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
+import { useLanguage } from '../utils/LanguageContext';
 
 interface GalleryItem {
   id: string;
@@ -10,6 +10,7 @@ interface GalleryItem {
 }
 
 export default function Gallery() {
+  const { t } = useLanguage();
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -115,32 +116,20 @@ export default function Gallery() {
   return (
     <div>
       <Head>
-        <title>Gallery - Almond Spark</title>
+        <title key="title">{t.gallery.title} - Almond Spark</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/images/logo.png" type="image/png" />
       </Head>
-
-      <nav className="main-nav">
-        <ul>
-          <li><Link href="/">Home</Link></li>
-          <li><Link href="/gallery" className="active">Gallery</Link></li>
-          <li><Link href="/personal-note">Personal Note</Link></li>
-          <li><Link href="/disclaimer">Disclaimer</Link></li>
-        </ul>
-      </nav>
 
       <div className="container">
         <header className="hero">
           <div className="title-container">
-            <h1 className="main-title">Gallery</h1>
-            <p className="tagline">Visual Strips Created by Our Community</p>
+            <h1 className="main-title">{t.gallery.title}</h1>
+            <p className="tagline">{t.gallery.description}</p>
           </div>
         </header>
         
         <main className="content">
           <section className="gallery-section">
-            <p className="gallery-intro">Here are past generations from our users. Hope you can find helpful strips for you here.</p>
-            
             <div className="gallery-controls">
               <button 
                 className="gallery-button" 
@@ -149,11 +138,11 @@ export default function Gallery() {
               >
                 {refreshing ? (
                   <>
-                    <div className="spinner-small"></div> Loading...
+                    <div className="spinner-small"></div> {t.common.loading || "Loading..."}
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-dice"></i> Show me more
+                    <i className="fas fa-dice"></i> {t.common.showMore || "Show me more"}
                   </>
                 )}
               </button>
@@ -163,16 +152,16 @@ export default function Gallery() {
               {loading ? (
                 <div className="gallery-loading">
                   <div className="spinner"></div>
-                  <p>Loading gallery items...</p>
+                  <p>{t.common.loadingGallery || "Loading gallery items..."}</p>
                 </div>
               ) : error ? (
                 <div className="gallery-error">
-                  <p>Error loading gallery items. Please try again later.</p>
+                  <p>{t.common.errorLoading || "Error loading gallery items. Please try again later."}</p>
                   <p className="error-details">{error}</p>
                 </div>
               ) : galleryItems.length === 0 ? (
                 <div className="gallery-empty">
-                  <p>No gallery items available yet. Generate some images first!</p>
+                  <p>{t.common.noGalleryItems || "No gallery items available yet. Generate some images first!"}</p>
                 </div>
               ) : (
                 galleryItems.map((item) => (
@@ -186,14 +175,14 @@ export default function Gallery() {
                       <div className="gallery-actions">
                         <button 
                           className="gallery-action-btn download-btn" 
-                          title="Download" 
+                          title={t.home.generator.result.download} 
                           onClick={() => downloadImage(item.filename, item.image_base64)}
                         >
                           <i className="fas fa-download"></i>
                         </button>
                         <button 
                           className="gallery-action-btn print-btn" 
-                          title="Print" 
+                          title={t.home.generator.result.print} 
                           onClick={() => printImage(item.image_base64, item.sentence)}
                         >
                           <i className="fas fa-print"></i>
@@ -216,11 +205,11 @@ export default function Gallery() {
               >
                 {refreshing ? (
                   <>
-                    <div className="spinner-small"></div> Loading...
+                    <div className="spinner-small"></div> {t.common.loading || "Loading..."}
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-dice"></i> Show me more
+                    <i className="fas fa-dice"></i> {t.common.showMore || "Show me more"}
                   </>
                 )}
               </button>
@@ -228,10 +217,6 @@ export default function Gallery() {
           </section>
         </main>
       </div>
-
-      <footer>
-        <p>&copy; 2025 Almond Spark. All rights reserved.</p>
-      </footer>
     </div>
   );
 }

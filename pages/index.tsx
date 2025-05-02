@@ -1,7 +1,8 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import Head from 'next/head';
-import Header from '../components/Header';
+import Image from 'next/image';
 import SettingsModal from '../components/SettingsModal';
+import { useLanguage } from '../utils/LanguageContext';
 
 export default function Home() {
   const [sentence, setSentence] = useState('');
@@ -12,6 +13,7 @@ export default function Home() {
   const [error, setError] = useState('');
   const [errorType, setErrorType] = useState<'api_key' | 'service_unavailable' | 'general' | ''>('');
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const { language, t } = useLanguage();
   
   // Retry state
   const [retryCount, setRetryCount] = useState(0);
@@ -254,152 +256,169 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>Almond Spark</title>
+        <title key="title">{t.home.title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/images/logo.png" type="image/png" />
       </Head>
 
-      <Header 
-        onApiKeySave={handleApiKeySave}
-        apiKey={apiKey}
-      />
+      <div className="hero-banner">
+        <div className="hero-image-container">
+          <Image 
+            src="/images/topbanner.png" 
+            alt="Almond Spark" 
+            className="hero-image"
+            width={1200}
+            height={300}
+            priority
+          />
+        </div>
+      </div>
 
-      <main className="content" data-api-key={!!apiKey}>
-        <section className="generator-section">
-          <h2>Generate Your Visual Strip</h2>
-          <p className="generator-intro">Enter the idea or sentence you wish to convey and press the button</p>
+      <section className="generator-section">
+        <h2 className="text-center">{t.home.generator.title}</h2>
+        <p className="generator-intro text-center">{t.home.generator.intro}</p>
 
-          <div className="api-key-banner">
-            <div className="api-key-banner-content">
-              <h3>📝 Before you start: Gemini API Key required</h3>
-              <p>To generate images, you need a free Gemini API key:</p>
-              <p className="api-key-banner-info">
-                We use the free gemini-2.0-flash-exp model, so there's no cost to you.<br/>
-                Your API key is saved only locally on your computer—never on our servers.<br/>
-                We don't collect any personal information about users.<br/>
-                Generated images are shared in the gallery for everyone's benefit.<br/>
-                Click the settings icon <span className="settings-icon">⚙️</span> in the top right corner to enter your key.
-              </p>
-            </div>
+        <div className="api-key-banner">
+          <div className="api-key-banner-content text-center">
+            <h3>{t.home.generator.apiKeyBanner.title}</h3>
+            <p>{t.home.generator.apiKeyBanner.description}</p>
+            <p className="api-key-banner-info">
+              {t.home.generator.apiKeyBanner.info.map((info, index) => (
+                <span key={index}>
+                  {info}<br/>
+                </span>
+              ))}
+              {t.home.generator.apiKeyBanner.settings}
+            </p>
           </div>
+        </div>
 
-          <div className="generator-form">
-            <form onSubmit={handleSubmit}>
-              <div className="input-wrapper">
-                <textarea 
-                  className="sentence-input" 
-                  placeholder="Type your sentence here..." 
-                  value={sentence}
-                  onChange={(e) => setSentence(e.target.value)}
-                  disabled={loading}
-                ></textarea>
-              </div>
+        {language === 'he' && (
+          <p className="hebrew-limitation">
+            ג'מיני לא יודע לג'נרט מילים בעברית בצורה מספיק טובה. ולכן כל הפלט שלנו יצא תמיד עם מילים באנגלית. מצטערים מאד, ומקווים שזה ישתנה בעתיד הקרוב.
+          </p>
+        )}
 
-              <div className="button-wrapper">
-                <button 
-                  type="submit"
-                  className="generate-button"
-                  disabled={loading || !sentence.trim()}
-                >
-                  {loading ? 'Generating...' : 'Generate Icon Strip'}
-                </button>
-              </div>
-            </form>
-            
-            <p className="generation-disclaimer">ALL the generations here will be shown randomly in the gallery section - make sure you don't use personal information in your strips.</p>
-            
-            {!apiKey && !loading && !error && (
-              <div className="api-key-prompt">
-                <p>Please use the Settings to input your Gemini API key so we can generate strips for you.</p>
+        <div className="generator-form">
+          <form onSubmit={handleSubmit}>
+            <div className="input-wrapper">
+              <textarea 
+                className="sentence-input" 
+                placeholder={t.home.generator.form.placeholder}
+                value={sentence}
+                onChange={(e) => setSentence(e.target.value)}
+                disabled={loading}
+              ></textarea>
+            </div>
+
+            <div className="button-wrapper">
+              <button 
+                type="submit"
+                className="generate-button"
+                disabled={loading || !sentence.trim()}
+              >
+                {loading ? t.home.generator.loading : t.home.generator.form.button}
+              </button>
+            </div>
+          </form>
+          
+          <p className="generation-disclaimer text-center">{t.home.generator.form.disclaimer}</p>
+          
+          {!apiKey && !loading && !error && (
+            <div className="api-key-prompt text-center">
+              <p>{t.home.generator.form.apiKeyPrompt}</p>
+              <button 
+                onClick={() => setIsApiKeyModalOpen(true)} 
+                className="settings-prompt-btn"
+              >
+                {t.home.generator.form.openSettings}
+              </button>
+            </div>
+          )}
+          
+          {loading && (
+            <div id="loading-indicator" className="htmx-indicator" style={{ display: 'flex' }}>
+              <div className="spinner"></div>
+              <p>{t.home.generator.loading}</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className={`error-message error-${errorType} text-center`}>
+              <p>{
+                errorType === 'api_key' ? t.home.generator.error.apiKey :
+                errorType === 'service_unavailable' ? t.home.generator.error.serviceUnavailable :
+                t.home.generator.error.general
+              }</p>
+              {errorType === 'api_key' && (
                 <button 
                   onClick={() => setIsApiKeyModalOpen(true)} 
-                  className="settings-prompt-btn"
+                  className="error-action-btn"
                 >
-                  Open Settings
+                  {t.home.generator.form.openSettings}
+                </button>
+              )}
+              {errorType === 'service_unavailable' && !isRetrying && retriesLeft === 0 && (
+                <p className="error-hint">{t.home.generator.error.serviceUnavailable}</p>
+              )}
+              {errorType === 'service_unavailable' && isRetrying && (
+                <div className="retry-countdown">
+                  <div className="countdown-timer">
+                    <span className="countdown-number">{retryCountdown}</span>
+                    <svg className="countdown-svg" width="40" height="40">
+                      <circle 
+                        className="countdown-circle" 
+                        cx="20" 
+                        cy="20" 
+                        r="16"
+                        style={{ 
+                          strokeDashoffset: `${100 - (retryCountdown / (retryCount === 1 ? 10 : retryCount === 2 ? 15 : 20) * 100)}` 
+                        }}
+                      />
+                    </svg>
+                  </div>
+                  <p className="retry-message">
+                    {t.home.generator.error.retryMessage} {retriesLeft > 0 ? 
+                      t.home.generator.error.retryMoreAttempts.replace('{count}', retriesLeft.toString()) : 
+                      t.home.generator.error.retryLastAttempt}
+                  </p>
+                </div>
+              )}
+              {errorType === 'general' && (
+                <p className="error-hint">{t.home.generator.error.persistentError}</p>
+              )}
+            </div>
+          )}
+          
+          {generatedImage && (
+            <div className="result-container text-center">
+              <h3>{t.home.generator.result.title}</h3>
+              <img 
+                src={`data:image/png;base64,${generatedImage}`} 
+                alt="Generated visual strip" 
+                className="result-image"
+              />
+              <p className="prompt-text">"{sentence}"</p>
+              <div className="gallery-actions">
+                <button 
+                  className="gallery-action-btn download-btn" 
+                  title="Download" 
+                  onClick={downloadImage}
+                >
+                  {t.home.generator.result.download}
+                </button>
+                <button 
+                  className="gallery-action-btn print-btn" 
+                  title="Print" 
+                  onClick={printImage}
+                >
+                  {t.home.generator.result.print}
                 </button>
               </div>
-            )}
-            
-            {loading && (
-              <div id="loading-indicator" className="htmx-indicator" style={{ display: 'flex' }}>
-                <div className="spinner"></div>
-                <p>Creating your visual strip...</p>
-              </div>
-            )}
-            
-            {error && (
-              <div className={`error-message error-${errorType}`}>
-                <p>{error}</p>
-                {errorType === 'api_key' && (
-                  <button 
-                    onClick={() => setIsApiKeyModalOpen(true)} 
-                    className="error-action-btn"
-                  >
-                    Open Settings
-                  </button>
-                )}
-                {errorType === 'service_unavailable' && !isRetrying && retriesLeft === 0 && (
-                  <p className="error-hint">The Gemini model experiences high traffic at times. Please try again later.</p>
-                )}
-                {errorType === 'service_unavailable' && isRetrying && (
-                  <div className="retry-countdown">
-                    <div className="countdown-timer">
-                      <span className="countdown-number">{retryCountdown}</span>
-                      <svg className="countdown-svg" width="40" height="40">
-                        <circle 
-                          className="countdown-circle" 
-                          cx="20" 
-                          cy="20" 
-                          r="16"
-                          style={{ 
-                            strokeDashoffset: `${100 - (retryCountdown / (retryCount === 1 ? 10 : retryCount === 2 ? 15 : 20) * 100)}` 
-                          }}
-                        />
-                      </svg>
-                    </div>
-                    <p className="retry-message">
-                      Automatic retry in progress... {retriesLeft > 0 ? 
-                        `${retriesLeft} more ${retriesLeft === 1 ? 'retry' : 'retries'} will be attempted if needed.` : 
-                        'This is the last retry attempt.'}
-                    </p>
-                  </div>
-                )}
-                {errorType === 'general' && (
-                  <p className="error-hint">If this problem persists, please contact us for assistance.</p>
-                )}
-              </div>
-            )}
-            
-            {generatedImage && (
-              <div className="result-container">
-                <h3>Your Visual Strip</h3>
-                <img 
-                  src={`data:image/png;base64,${generatedImage}`} 
-                  alt="Generated visual strip" 
-                  className="result-image"
-                />
-                <p className="prompt-text">"{sentence}"</p>
-                <div className="gallery-actions">
-                  <button 
-                    className="gallery-action-btn download-btn" 
-                    title="Download" 
-                    onClick={downloadImage}
-                  >
-                    Download
-                  </button>
-                  <button 
-                    className="gallery-action-btn print-btn" 
-                    title="Print" 
-                    onClick={printImage}
-                  >
-                    Print
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* API Key Modal - only shown when needed */}
       <SettingsModal 
@@ -408,10 +427,84 @@ export default function Home() {
         onSave={handleApiKeySave}
         initialApiKey={apiKey}
       />
-
-      <footer>
-        <p>&copy; 2025 Almond Spark. All rights reserved.</p>
-      </footer>
+      
+      <style jsx>{`
+        .text-center {
+          text-align: center;
+        }
+        
+        .hero-banner {
+          margin-bottom: var(--space-lg);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        
+        .hero-image-container {
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        
+        .hero-image {
+          width: 100%;
+          height: auto;
+          border-radius: var(--radius-lg);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          border: 2px solid var(--teal);
+        }
+        
+        .title-container {
+          text-align: center;
+          margin-top: var(--space-md);
+        }
+        
+        .main-title, .tagline, .disclaimer, .hebrew-limitation {
+          text-align: center;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        
+        .hebrew-limitation {
+          color: var(--coral);
+          font-style: italic;
+          max-width: 700px;
+          margin: 1em auto;
+          padding: 10px;
+          border: 1px dashed var(--coral-light);
+          background: var(--coral-light);
+          border-radius: 8px;
+        }
+        
+        .generator-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        
+        .generator-intro {
+          max-width: 600px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        
+        .api-key-banner-content {
+          max-width: 800px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        
+        .api-key-banner-info {
+          margin: 15px auto;
+          max-width: 700px;
+        }
+        
+        .generation-disclaimer {
+          max-width: 700px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+      `}</style>
     </div>
   );
 }

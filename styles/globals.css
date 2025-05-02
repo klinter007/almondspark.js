@@ -30,13 +30,22 @@
 
 /* Base Styles */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', 'Assistant', 'Helvetica Neue', sans-serif;
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-md);
   line-height: 1.4;
   color: var(--charcoal);
   background-color: var(--gray-light);
+}
+
+/* Language specific font settings */
+:root[lang="en"] body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+:root[lang="he"] body {
+  font-family: 'Assistant', 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* Layout */
@@ -103,6 +112,33 @@ h2 {
 .main-nav a:hover, .main-nav a.active {
   color: var(--coral);
   border-bottom: 2px solid var(--coral);
+}
+
+/* Language Selector */
+.language-selector {
+  margin-left: auto;
+}
+
+[dir="rtl"] .language-selector {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.language-toggle-button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.language-toggle-button:hover {
+  background-color: #f1f1f1;
 }
 
 /* Hero Section */
@@ -408,6 +444,11 @@ h2 {
   transition: opacity 0.2s;
 }
 
+[dir="rtl"] .gallery-actions {
+  right: auto;
+  left: var(--space-xs);
+}
+
 .gallery-image-container:hover .gallery-actions {
   opacity: 1;
 }
@@ -450,6 +491,11 @@ h2 {
 .feature-list {
   padding-left: var(--space-xl);
   margin-bottom: var(--space-md);
+}
+
+[dir="rtl"] .feature-list {
+  padding-left: 0;
+  padding-right: var(--space-xl);
 }
 
 .feature-list li {
@@ -515,6 +561,11 @@ h2 {
   margin-bottom: var(--space-md);
 }
 
+[dir="rtl"] .disclaimer-list {
+  padding-left: 0;
+  padding-right: var(--space-xl);
+}
+
 .disclaimer-list li {
   margin-bottom: var(--space-sm);
 }
@@ -545,21 +596,29 @@ h2 {
   border-left: 4px solid;
 }
 
+[dir="rtl"] .error-message {
+  border-left: none;
+  border-right: 4px solid;
+}
+
 .error-api_key {
   background-color: rgba(243, 133, 130, 0.1);
   border-left-color: var(--coral);
+  border-right-color: var(--coral);
   color: #721c24;
 }
 
 .error-service_unavailable {
   background-color: rgba(255, 193, 7, 0.1);
   border-left-color: #ffc107;
+  border-right-color: #ffc107;
   color: #856404;
 }
 
 .error-general {
   background-color: rgba(220, 53, 69, 0.1);
   border-left-color: #dc3545;
+  border-right-color: #dc3545;
   color: #721c24;
 }
 
@@ -803,7 +862,7 @@ footer {
   padding: var(--space-sm) var(--space-md);
   padding-right: calc(var(--space-md) + 24px); /* Make room for the clear button */
   border: 2px solid var(--teal-light);
-  border-radius: var(--radius-md);
+  border-radius: var (--radius-md);
   font-size: 16px;
   outline: none;
   transition: border-color 0.3s, box-shadow 0.3s;
@@ -1091,4 +1150,55 @@ footer {
 
 .rtl-content .signature {
   text-align: center;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .main-nav ul {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] h1, 
+[dir="rtl"] h2, 
+[dir="rtl"] h3, 
+[dir="rtl"] p, 
+[dir="rtl"] div {
+  text-align: right;
+}
+
+[dir="rtl"] .title-container,
+[dir="rtl"] .generator-section,
+[dir="rtl"] .gallery-intro,
+[dir="rtl"] .gallery-loading, 
+[dir="rtl"] .gallery-empty, 
+[dir="rtl"] .gallery-error,
+[dir="rtl"] .disclaimer,
+[dir="rtl"] footer {
+  text-align: center;
+}
+
+/* Hebrew language specific styles */
+html[lang="he"] {
+  font-family: 'Assistant', sans-serif;
+}
+
+html[lang="he"] input,
+html[lang="he"] textarea,
+html[lang="he"] button {
+  font-family: 'Assistant', sans-serif;
+}
+
+/* Responsive styles for RTL */
+@media (max-width: 768px) {
+  [dir="rtl"] .main-nav ul {
+    padding-right: 0;
+  }
+  
+  [dir="rtl"] .feature-list,
+  [dir="rtl"] .disclaimer-list {
+    padding-right: var(--space-md);
+  }
 }

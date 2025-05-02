@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../utils/LanguageContext';
 
 interface GeminiApiKeyModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface GeminiApiKeyModalProps {
 const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: GeminiApiKeyModalProps) => {
   const [apiKey, setApiKey] = useState(initialApiKey);
   const [message, setMessage] = useState('');
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     setApiKey(initialApiKey);
@@ -17,6 +19,7 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
   
   const handleSave = () => {
     if (!apiKey.trim()) {
+      // Keep error messages in English as they're technical
       setMessage('Please enter a valid Gemini API key');
       return;
     }
@@ -42,41 +45,44 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
       <div className="settings-modal">
         <h2>GEMINI API KEY</h2>
         <p>
-          Please enter your Gemini API key from{' '}
+          {language === 'en' ? 'Please enter your Gemini API key from' : 'אנא הזן את מפתח ה-API של Gemini שלך מ'}{' '}
           <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
             Google AI Studio
           </a>
         </p>
         <p className="settings-info">
-          Your API key is stored in your browser and used to generate images with the 
-          gemini-2.0-flash-exp model. To create a new API key:{' '}
+          {language === 'en' ? 
+            'Your API key is stored in your browser and used to generate images with the gemini-2.0-flash-exp model. To create a new API key:' : 
+            'מפתח ה-API שלך מאוחסן בדפדפן שלך ומשמש ליצירת תמונות עם המודל gemini-2.0-flash-exp. ליצירת מפתח API חדש:'}
           <ol className="key-instructions">
-            <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio API Keys page</a></li>
-            <li>Sign in with your Google account</li>
-            <li>Click "Create API key"</li>
-            <li>Copy the generated key and paste it here</li>
+            <li>{language === 'en' ? 'Visit' : 'בקר באתר'} <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio API Keys page</a></li>
+            <li>{language === 'en' ? 'Sign in with your Google account' : 'התחבר עם חשבון Google שלך'}</li>
+            <li>{language === 'en' ? 'Click "Create API key"' : 'לחץ על "Create API key"'}</li>
+            <li>{language === 'en' ? 'Copy the generated key and paste it here' : 'העתק את המפתח שנוצר והדבק אותו כאן'}</li>
           </ol>
-          The API key is only used for this service and stored locally in your browser.
+          {language === 'en' ? 
+            'The API key is only used for this service and stored locally in your browser.' : 
+            'מפתח ה-API משמש רק לשירות זה ומאוחסן מקומית בדפדפן שלך.'}
         </p>
         
         <div className="settings-form">
-          <label htmlFor="apiKeyInput">Gemini API Key</label>
+          <label htmlFor="apiKeyInput">{language === 'en' ? 'Gemini API Key' : 'מפתח API של Gemini'}</label>
           <input
             id="apiKeyInput"
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Enter your Gemini API key"
+            placeholder={language === 'en' ? 'Enter your Gemini API key' : 'הזן את מפתח ה-API של Gemini שלך'}
           />
           
           {message && <p className={message.includes('success') ? 'success-message' : 'error-message'}>{message}</p>}
           
           <div className="settings-actions">
             <button className="cancel-button" onClick={onClose}>
-              Cancel
+              {language === 'en' ? 'Cancel' : 'ביטול'}
             </button>
             <button className="save-button" onClick={handleSave}>
-              Save API Key
+              {language === 'en' ? 'Save API Key' : 'שמור מפתח API'}
             </button>
           </div>
         </div>
@@ -108,17 +114,21 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
         h2 {
           margin-top: 0;
           color: #333;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         
         .settings-info {
           font-size: 14px;
           color: #666;
           margin-bottom: 20px;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         
         .key-instructions {
           margin-top: 8px;
-          padding-left: 20px;
+          padding-left: ${language === 'he' ? '0' : '20px'};
+          padding-right: ${language === 'he' ? '20px' : '0'};
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         
         .key-instructions li {
@@ -138,6 +148,7 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
         label {
           margin-bottom: 8px;
           font-weight: bold;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         
         input {
@@ -146,11 +157,13 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
           border: 1px solid #ddd;
           border-radius: 4px;
           font-size: 16px;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         
         .settings-actions {
           display: flex;
-          justify-content: flex-end;
+          justify-content: ${language === 'he' ? 'flex-start' : 'flex-end'};
+          flex-direction: ${language === 'he' ? 'row-reverse' : 'row'};
           gap: 10px;
           margin-top: 15px;
         }
@@ -176,11 +189,13 @@ const GeminiApiKeyModal = ({ isOpen, onClose, onSave, initialApiKey = '' }: Gemi
         .error-message {
           color: #d32f2f;
           font-size: 14px;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         
         .success-message {
           color: #388e3c;
           font-size: 14px;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
       `}</style>
     </div>
