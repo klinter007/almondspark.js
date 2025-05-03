@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 interface GalleryItem {
   id: string;
@@ -11,8 +12,7 @@ interface GalleryItem {
 }
 
 export default function AdminGallery() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  const { data: session, status } = useSession();
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,33 +24,26 @@ export default function AdminGallery() {
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
   const router = useRouter();
 
-  // Authentication
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simple password check - in a real app, use a secure authentication method
-    if (password === 'almondspark_admin') { // You would use a more secure method in production
-      setIsAuthenticated(true);
-      localStorage.setItem('admin_authenticated', 'true');
-      loadAllGalleryItems();
-    } else {
-      setError('Invalid password');
-    }
-  };
+  // Check authentication status
+  const isAuthenticated = status === 'authenticated' && session?.user?.isAdmin === true;
+  const isLoading = status === 'loading';
 
-  // Check if user is already authenticated
+  // Load gallery items when authenticated
   useEffect(() => {
-    const isAuth = localStorage.getItem('admin_authenticated') === 'true';
-    setIsAuthenticated(isAuth);
-    if (isAuth) {
+    if (isAuthenticated) {
       loadAllGalleryItems();
     }
-  }, []);
+  }, [isAuthenticated]);
+
+  // Handle Google sign in
+  const handleLogin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    signIn('google', { callbackUrl: '/admin' });
+  };
 
   // Logout function
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('admin_authenticated');
-    router.push('/admin');
+    signOut({ callbackUrl: '/admin' });
   };
 
   // Load all gallery items without limit
@@ -213,6 +206,7 @@ export default function AdminGallery() {
     setSelectAll(false);
   };
 
+  // Show login page if not authenticated
   if (!isAuthenticated) {
     return (
       <div>
@@ -241,25 +235,34 @@ export default function AdminGallery() {
           <main className="content">
             <section className="admin-login">
               {error && <div className="error-message">{error}</div>}
-              
-              <form onSubmit={handleLogin} className="admin-form">
-                <div className="input-wrapper">
-                  <label htmlFor="password">Admin Password</label>
-                  <input 
-                    type="password" 
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="admin-input"
-                    required
-                  />
+              {status === 'unauthenticated' && (
+                <div className="admin-form">
+                  <p className="admin-login-message">Please sign in with your Google account to access the admin area.</p>
+                  <div className="button-wrapper">
+                    <button 
+                      onClick={handleLogin} 
+                      className="admin-button google-login-button"
+                      disabled={isLoading}
+                    >
+                      <i className="fa fa-google"></i> {isLoading ? 'Loading...' : 'Sign in with Google'}
+                    </button>
+                  </div>
                 </div>
-                <div className="button-wrapper">
-                  <button type="submit" className="admin-button">
-                    Login
+              )}
+              {status === 'loading' && (
+                <div className="admin-loading">
+                  <div className="spinner"></div>
+                  <p>Checking authentication...</p>
+                </div>
+              )}
+              {status === 'authenticated' && !session?.user?.isAdmin && (
+                <div className="error-message">
+                  <p>Your account ({session?.user?.email}) is not authorized to access the admin area.</p>
+                  <button onClick={() => signOut({ callbackUrl: '/admin' })} className="admin-button">
+                    Sign Out
                   </button>
                 </div>
-              </form>
+              )}
             </section>
           </main>
         </div>
@@ -301,9 +304,21 @@ export default function AdminGallery() {
           <section className="admin-controls">
             <div className="admin-header">
               <h2>Gallery Management</h2>
-              <button onClick={handleLogout} className="admin-logout-button">
-                <i className="fas fa-sign-out-alt"></i> Logout
-              </button>
+              <div className="admin-user-info">
+                {session?.user?.image && (
+                  <img 
+                    src={session.user.image} 
+                    alt={session.user.name || 'Admin user'} 
+                    className="admin-user-avatar" 
+                  />
+                )}
+                <span className="admin-user-name">
+                  {session?.user?.name || session?.user?.email}
+                </span>
+                <button onClick={handleLogout} className="admin-logout-button">
+                  <i className="fas fa-sign-out-alt"></i> Logout
+                </button>
+              </div>
             </div>
             
             {message && <div className="success-message">{message}</div>}

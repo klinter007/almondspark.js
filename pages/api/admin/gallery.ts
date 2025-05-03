@@ -1,4 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]';
 import { getGallery, initialize } from '../../../utils/geminiUtils';
 
 type GalleryResponse = {
@@ -19,6 +21,13 @@ export default async function handler(
   // Only allow GET requests
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Check if user is authenticated and has admin rights
+  const session = await getServerSession(req, res, authOptions);
+  
+  if (!session?.user?.isAdmin) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   try {
